@@ -18,6 +18,6 @@ public class AaHelloWorld {
 /*
 一个文件中能有多个类，但是只能有一个public类（且该类与文件名同名）
  */
-class Person {
+class Car {
 
 }
