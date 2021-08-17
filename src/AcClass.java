@@ -240,8 +240,12 @@ class Bank2 { // 懒汉式实现
 
     //3.提供公共方法，返回类的对象
     public static Bank2 getInstance() {
-        if (instance == null) { //线程不安全！
-            instance = new Bank2();
+        if (instance == null) {
+            synchronized (Bank2.class) {
+                if (instance == null) {
+                    instance = new Bank2();
+                }
+            }
         }
         return instance;
     }
