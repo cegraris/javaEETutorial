@@ -1,6 +1,11 @@
 import java.nio.charset.StandardCharsets;
-import java.util.Date;
-import java.util.Locale;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.*;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
+import java.time.temporal.TemporalAccessor;
+import java.util.*;
 
 /**
  * @author Jiahao Wu
@@ -131,17 +136,130 @@ public class AjAPI {
         1.java.lang.System -> public static long currentTimeMillis() //(JDK8-)
         2.java.util.Date（父类）
             java.sql.Date（子类） （对应数据库中Date对象）
-        3.java.text.SimpleDateFormat
+        3.java.text.SimpleDateFormat （Date<->String转化器）
+        4.Calendar
+        5.java.time (*)
+        6.Instant (*)
+        7.java.time.format.DateTimeFormatter (*)
          */
+        //util.Date
         Date date1 = new Date(); //对应当前时间
         System.out.println(date1.toString()); //显示当前的年月日时分秒
         System.out.println(date1.getTime()); //返回毫秒时间戳
         Date date2 = new Date(1550306204104L); //用毫秒数生成一个Date对象
-
+        //sql.date
         java.sql.Date date3 = new java.sql.Date(1550306204104L);
         System.out.println(date3); //显示年月日
-        //java.util.Date -> java.sql.Date
-        java.sql.Date date5 = new java.sql.Date(date3.getTime());
+        java.sql.Date date5 = new java.sql.Date(date3.getTime()); //java.util.Date -> java.sql.Date
+
+        //SimpleDateFormat
+        SimpleDateFormat sdf = new SimpleDateFormat();
+        Date date = new Date();
+        String format = sdf.format(date);//格式化：日期->字符串
+        try {
+            date = sdf.parse(format);//解析：字符串->日期
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        SimpleDateFormat sdf2 = new SimpleDateFormat("yyyyy.MMMMM.dd GGG hh:mm aaa");//指定格式转换
+
+        //Calendar
+        //一月0,二月1...十二月11
+        //周日1,周一2...周六7
+        Calendar calendar = Calendar.getInstance();
+        int days = calendar.get(Calendar.DAY_OF_MONTH); //get()获取现在是这个月的第几天
+        calendar.set(Calendar.DAY_OF_MONTH,22); //set()修改calendar中的属性
+        calendar.add(Calendar.DAY_OF_MONTH,3); //add()在目前的属性值上加上额外值
+        Date date6 = calendar.getTime(); //日历类对象->Date对象
+        calendar.setTime(date6); //Date对象->日历类对象
+
+        //time
+        LocalDate localDate = LocalDate.now(); //获取当前日期
+        LocalTime localTime = LocalTime.now(); //获取当前时间
+        LocalDateTime localDateTime = LocalDateTime.now(); //获取当前日期与时间
+        localDateTime = LocalDateTime.of(2020,10,6,13,23,43); //设置某一时间
+        System.out.println(localDateTime.getDayOfMonth()); //get获取当月的第几天(String)
+        LocalDateTime localDateTime1 = localDateTime.withDayOfMonth(22); //with设置时间(不可变性，本身不变，返回一个变后对象)
+        localDateTime1 =localDateTime.plusMonths(3); //plus加时间，不变性
+        localDateTime1 = localDateTime.minusMonths(3); //minus减时间，不变性
+
+        //Instant
+        Instant instant = Instant.now(); //本初子午线时间
+        System.out.println(instant);
+        OffsetDateTime offsetDateTime = instant.atOffset(ZoneOffset.ofHours(8)); //东八区时间
+        long milli = instant.toEpochMilli(); //获取对应的1970毫秒数
+        Instant instant1 = Instant.ofEpochMilli(1550306204104L); //设置指定时间
+
+        //DateTimeFormatter 格式化或解析日期、时间
+        //方式一:预定义的标准格式
+        DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+        String ldt = formatter.format(LocalDateTime.now()); //格式化：日期->字符串
+        TemporalAccessor parse = formatter.parse(ldt);//解析：字符串->日期
+        //方式二：本地化相关的格式
+        DateTimeFormatter formatter2 = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT);
+        String format2 = formatter2.format(localDateTime);//格式化：日期->字符串
+        DateTimeFormatter formatter3 =DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL);
+        String format3 = formatter3.format(LocalDate.now());//格式化：日期->字符串
+        //方式三：自定义格式 (*)
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm:ss");
+        String str4 = dateTimeFormatter.format(LocalDateTime.now());//格式化：日期->字符串
+        TemporalAccessor parse1 = dateTimeFormatter.parse(str4);//解析：字符串->日期
+
     }
 
+
 }
+/*
+比较器
+ */
+// comparable接口：自然排序 (java.lang.Comparable)
+class Goods implements Comparable{
+    private double price;
+    @Override
+    public int compareTo(Object o) {
+        if(o instanceof Goods){
+            Goods goods = (Goods)o;
+            if(this.price>goods.price){
+                return 1;
+            } else if (this.price<goods.price){
+                return -1;
+            } else {
+                return 0;
+            }
+        }
+        throw new RuntimeException("Wrong Class!");
+    }
+
+    // Comparator接口：定制排序 (java.util.Comparator)
+    // 当元素的类型没有实现Comparable接口而又不方便修改代码，
+    // 或者实现了Comparable接口，但是排序规则不是想要的，那么可以考虑使用Comparator来排序
+    public void test(){
+        String[] arr = new String[]{"AA","CC","KK","MM","GG","JJ","DD"};
+        Arrays.sort(arr, new Comparator() {
+            @Override
+            public int compare(Object o1, Object o2) {
+                if(o1 instanceof String && o2 instanceof String){
+                    String s1 = (String) o1;
+                    String s2 = (String) o2;
+                    return -s1.compareTo(s2);
+                }
+                throw new RuntimeException("Wrong Class!");
+            }
+        });
+    }
+}
+
+/* System类
+native long currentTimeMillis()
+void exit(int status) //0正常退出，非零代表异常退出
+void gc(); //请求回收垃圾
+String getProperty(String key) //获得系统中的指定属性: java.version;java.home;os.name;os.version;user.name;user.home;user.dir;
+ */
+
+/* Math类 （java.lang.Math）
+abs,acos,asin,atan,cos,sin,tan,sqrt,pow,log,exp,max.min.random,round,toDegrees,toRadians
+ */
+
+/* BigInteger 与 BigDecimal
+表示不可变的任意精度的整数，有符号的十进制点数
+ */
