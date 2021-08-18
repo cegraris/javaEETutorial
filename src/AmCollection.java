@@ -8,14 +8,15 @@ import java.util.*;
 /* Collection
 Collection接口：单列数据，定义了存取一组对象的方法的集合
     List接口：有序且可重复的集合
-        Vector实现
-        ArrayList实现
-        LinkedList实现
-    Set接口：无需，不可重复的集合
-        HashSet实现
-            LinkedHashSet实现
+        Vector实现 （古老实现类）线程安全，效率低，底层使用Object[] elementData存储
+        ArrayList实现 （*）线程不安全，效率高，底层使用Object[] elementData存储
+        LinkedList实现 底层使用双向链表存储（频繁插入、删除效率高）
+    Set接口：无序，不可重复的集合 （添加元素的类需重写hashCode()和equals()方法，且两者要保持一致性）
+        HashSet实现 （*） 线程不安全，可以存储null值，底层采用HashMap类（数组+链表）
+            LinkedHashSet实现 遍历内部数据时，可按照添加的顺序（在HashSet基础上加上了额外的双向链）
         SortedSet接口
-            TreeSet实现
+            TreeSet实现 红黑树，要求元素是同一个实现了Comparable接口的类（按指定属性排序并遍历）
+                        或在构造器中提供一个Comparator
 Map接口：双列数据，保存具有映射关系“key-value对”的集合
     Hashtable实现
         Properties实现
@@ -50,6 +51,58 @@ public class AmCollection {
         List<String> list = Arrays.asList(new String[]{"AA", "BB", "CC"});//String[] -> Collection
         List arr1 = Arrays.asList(new int[]{123, 456});//1个元素
         List arr2 = Arrays.asList(new Integer[]{123, 456});//2个元素
-        coll.iterator(); //返回Iterator接口的实例，用于遍历集合元素
+
+        //Iterator接口（迭代Collection）
+        Iterator iterator = coll.iterator(); //返回Iterator接口的实例，用于遍历集合元素
+        while(iterator.hasNext()){ //是否还有下一个元素
+            System.out.println(iterator.next()); //打印下一个元素
+            if ("Tom".equals(obj)){
+                iterator.remove(); //遍历过程中移除部分数据（迭代器的remove方法）
+            }
+        }
+
+        //for-each循环，遍历集合、数组（JDK5.0+）内部仍然调用迭代器
+        for(Object element:coll){
+            System.out.println(element);
+        }
+
+        //List接口
+        //List新增常用方法：
+        ArrayList list0 = new ArrayList();
+        list0.add(123);
+        list0.add(456);
+        list0.add("AA");
+        list0.add(456);
+        list0.add(1,"BB"); //将元素插入指定位置
+        List l = Arrays.asList(1,2,3);
+        list.addAll(l); // 将l中元素都加入
+        list0.indexOf(456); //返回首次出现的索引，没有则返回-1
+        list0.lastIndexOf(456); //返回最后一次出现的索引，没有则返回-1
+        list0.remove(3); //（重载）删除索引为3的元素
+        list0.set(1,"CC"); //将某索引对应元素修改
+        List subList = list0.subList(1,4); //左闭右开子list
+        //ArrayList
+        ArrayList list1 = new ArrayList(); //仅当第一次add元素时才建立一个长度为10的数组
+        ArrayList list2 = new ArrayList(20); //初始数组长度
+        //LinkedList
+
+        //Set接口(无额外定义新的方法，都是Collection中的方法)
+        //无序性：不等于随机性，存储的数据在底层数组中并非按照数组索引的顺序添加，而是依照哈希值添加
+        //不可重复性：
+        //  HashSet：先用hashcode确定数组中存放的位置，若此位置上无其他元素则添加成果，不然对比此链上所有元素与它的哈希值是否相同
+        //  若不同，则添加成功，若相同则再用equals()进行判断 ，返回true则不必添加，false则添加成果
+        Set set = new HashSet();
+        set.add(456);
+        set.add(123);
+        set.add(123);
+        set.add("AA");
+        set.add("CC");
+        set.add(129);
+
+        Iterator iterator1 = set.iterator();
+        while(iterator1.hasNext()){
+            System.out.println(iterator.next()); //与添加的顺序不一致
+        }
+
     }
 }
