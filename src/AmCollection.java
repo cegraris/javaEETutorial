@@ -18,12 +18,16 @@ Collection接口：单列数据，定义了存取一组对象的方法的集合
             TreeSet实现 红黑树，要求元素是同一个实现了Comparable接口的类（按指定属性排序并遍历）
                         或在构造器中提供一个Comparator
 Map接口：双列数据，保存具有映射关系“key-value对”的集合
-    Hashtable实现
-        Properties实现
-    HashMap实现
-        LinkedHashMap实现
+        Map中的key:无序的、不可重复的，使用Set存储所有的key -> key所在的类要重写equals()和hashCode()(以HashMap为例）
+        Map中的value：无序的，可重复的，使用Collection存储所有的value ->所在类要重写equals()
+        一个键值对：key-value构成了一个Entry对象
+        Map中的entry：无序的、不可重复的，使用Set存储所有的entry
+    Hashtable实现 （古老实现类） 线程安全，效率低，不能存储null的key和value
+        Properties实现 常用来处理配置文件，key和value都是String类型
+    HashMap实现 （*） 无序，线程不安全，效率高，存储null的key和value，（数组+链表+红黑树）（多线程，CurrentHashMap）
+        LinkedHashMap实现 保证在遍历map元素是，可以按照添加的顺序实现遍历，在原有的基础上添加了双向指针
     SortedMap接口
-        TreeMap实现
+        TreeMap实现 有序 保证按照添加的key进行排序，实现排序遍历（）自然排序或定制排序（红黑树）
  */
 public class AmCollection {
     public static void main(String[] args) {
@@ -89,8 +93,8 @@ public class AmCollection {
         //Set接口(无额外定义新的方法，都是Collection中的方法)
         //无序性：不等于随机性，存储的数据在底层数组中并非按照数组索引的顺序添加，而是依照哈希值添加
         //不可重复性：
-        //  HashSet：先用hashcode确定数组中存放的位置，若此位置上无其他元素则添加成果，不然对比此链上所有元素与它的哈希值是否相同
-        //  若不同，则添加成功，若相同则再用equals()进行判断 ，返回true则不必添加，false则添加成果
+        //  HashSet：先用hashcode确定数组中存放的位置，若此位置上无其他元素则添加成果，不然对比此链（单链）上所有元素与它的哈希值是否相同
+        //  若不同，则添加成功，若相同则再用equals()进行判断 ，返回true则不必添加，false则添加成功
         Set set = new HashSet();
         set.add(456);
         set.add(123);
@@ -103,6 +107,15 @@ public class AmCollection {
         while(iterator1.hasNext()){
             System.out.println(iterator.next()); //与添加的顺序不一致
         }
+
+        //HashMap 实现原理：
+        //HashMap map = new HashMap(); 实例化
+        //map.put(key1,value1); 第一次put创建长度为16的一维数组Node[] table
+        //依据key类似HashSet将键值对存放入数组或数组对应位置下的链表（红黑树）内
+        //当put重复key时，新value会覆盖旧value
+        //随着数据的加入（超过临界值且要存放的位置非空），数组会扩容，默认为扩容两倍。当数组上某索引位对应元素个数>8且数组长度>64，改用红黑树代替链表，加速查找
+
+        //LinkedHashMap，相比HashMap，采用Entry代替Node，额外添加了两个双向链表
 
     }
 }
