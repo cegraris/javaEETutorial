@@ -1,3 +1,8 @@
+import sun.reflect.generics.tree.Tree;
+
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.*;
 
 /**
@@ -58,15 +63,15 @@ public class AmCollection {
 
         //Iterator接口（迭代Collection）
         Iterator iterator = coll.iterator(); //返回Iterator接口的实例，用于遍历集合元素
-        while(iterator.hasNext()){ //是否还有下一个元素
+        while (iterator.hasNext()) { //是否还有下一个元素
             System.out.println(iterator.next()); //打印下一个元素
-            if ("Tom".equals(obj)){
+            if ("Tom".equals(obj)) {
                 iterator.remove(); //遍历过程中移除部分数据（迭代器的remove方法）
             }
         }
 
         //for-each循环，遍历集合、数组（JDK5.0+）内部仍然调用迭代器
-        for(Object element:coll){
+        for (Object element : coll) {
             System.out.println(element);
         }
 
@@ -77,14 +82,14 @@ public class AmCollection {
         list0.add(456);
         list0.add("AA");
         list0.add(456);
-        list0.add(1,"BB"); //将元素插入指定位置
-        List l = Arrays.asList(1,2,3);
+        list0.add(1, "BB"); //将元素插入指定位置
+        List l = Arrays.asList(1, 2, 3);
         list.addAll(l); // 将l中元素都加入
         list0.indexOf(456); //返回首次出现的索引，没有则返回-1
         list0.lastIndexOf(456); //返回最后一次出现的索引，没有则返回-1
         list0.remove(3); //（重载）删除索引为3的元素
-        list0.set(1,"CC"); //将某索引对应元素修改
-        List subList = list0.subList(1,4); //左闭右开子list
+        list0.set(1, "CC"); //将某索引对应元素修改
+        List subList = list0.subList(1, 4); //左闭右开子list
         //ArrayList
         ArrayList list1 = new ArrayList(); //仅当第一次add元素时才建立一个长度为10的数组
         ArrayList list2 = new ArrayList(20); //初始数组长度
@@ -104,7 +109,7 @@ public class AmCollection {
         set.add(129);
 
         Iterator iterator1 = set.iterator();
-        while(iterator1.hasNext()){
+        while (iterator1.hasNext()) {
             System.out.println(iterator.next()); //与添加的顺序不一致
         }
 
@@ -117,5 +122,99 @@ public class AmCollection {
 
         //LinkedHashMap，相比HashMap，采用Entry代替Node，额外添加了两个双向链表
 
+        //HashMap常用方法：
+        Map map = new HashMap();
+        map.put("AA", 123); //插入
+        map.put(45, 123);
+        map.put("BB", 56);
+        map.put("AA", 87); //修改（替换）
+        System.out.println(map); //打印
+        Map map1 = new HashMap();
+        map1.put("CC", 123);
+        map1.put("DD", 123);
+        map.putAll(map1); //合并
+        Object value = map.remove("CC"); // 返回被删元素，map一个键值对被删
+        map.clear(); //清空所有数据
+
+        System.out.println(map.get(45)); //查询，没有则返回null
+        System.out.println(map.containsKey("BB")); //查询是否含某key，返回布尔
+        System.out.println(map.containsValue(123)); //查询是否含某value
+        System.out.println(map.size()); //返回map大小
+        System.out.println(map.isEmpty()); //map是否为空
+        System.out.println(map.equals(map1)); //查询俩map的所有键值对是否完全相同
+
+        //遍历所有的key
+        Set set1 = map.keySet();
+        Iterator keyIterator = set.iterator();
+        while (keyIterator.hasNext()) {
+            System.out.println(keyIterator.next());
+        }
+        //遍历所有的value
+        Collection values = map.values();
+        for (Object obj2 : values) {
+            System.out.println(obj);
+        }
+        //遍历所有的key-value
+        Set entrySet = map.entrySet();
+        Iterator iterator2 = entrySet.iterator();
+        while (iterator2.hasNext()) {
+            Object obj3 = iterator2.next();
+            Map.Entry entry = (Map.Entry) obj3;
+            System.out.println(entry.getKey() + "-->" + entry.getValue());
+        }
+
+        //TreeMap
+        //添加key-value，要求key必须是有同一个类创建的对象,因为要按照key进行排序：自然排序、定制排序
+        TreeMap treeMap = new TreeMap(); //自然排序
+        treeMap.put("Apple", 23);
+        treeMap.put("Cabin", 54);
+        treeMap.put("Banana", 34);
+        TreeMap treeMap1 = new TreeMap(new Comparator() { //定制排序
+            @Override
+            public int compare(Object o1, Object o2) {
+                return o1.toString().compareTo(o2.toString());
+            }
+        });
+        treeMap1.put("Apple", 23);
+        treeMap1.put("Cabin", 54);
+        treeMap1.put("Banana", 34);
+
+        // Properties
+        Properties pros = new Properties();
+        FileInputStream fis = null;
+        try {
+            fis = new FileInputStream("jdbc.properties");
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        try {
+            pros.load(fis);
+            String name = pros.getProperty("name");
+            String password = pros.getProperty("password");
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if (fis != null) {
+                try {
+                    fis.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+        }
+
+        //Collections工具类，可以操控Collection和Map的工具类
+        Collections.reverse(list); //反转
+        Collections.shuffle(list); //随机
+        Collections.sort(list); //排序(自然排序)，也可以加入Comparator实现定制排序
+        Collections.swap(list,0,1); //交换
+        Collections.max(list); //返回给定集合中的最大元素（自然排序），也可以使用Comparator实现定制排序
+        Collections.min(list);
+        Collections.frequency(list,765); //某元素出现次数
+        List dest = Arrays.asList(new Object[list.size()]);
+        Collections.copy(dest,list); //将list中内容复制到dest中（从0位开始覆盖），dest中元素个数一定要>=list中元素个数
+        Collections.replaceAll(list,"abc","def"); //将list中所有旧值改成新值
+        List synchronizedList = Collections.synchronizedList(list); //返回一个线程安全的List
     }
 }
