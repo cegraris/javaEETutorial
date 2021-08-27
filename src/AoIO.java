@@ -1,6 +1,8 @@
 import org.junit.Test;
 
 import java.io.*;
+import java.net.*;
+import java.nio.charset.StandardCharsets;
 
 /**
  * @author Jiahao Wu
@@ -364,8 +366,113 @@ public class AoIO {
            rws:打开以便读取和写入，同步文件内容和元数据的更新
            用seak（int pos）方法，可以将指针调第n个字符
          */
-
     }
+
+    @Test
+    public void testTCP() throws IOException {
+        //实例化IP地址（本地回路127.0.0.1,localhost）
+        InetAddress inet1 = InetAddress.getByName("192.168.10.14");
+        InetAddress inet2 = InetAddress.getByName("www.google.com");
+        InetAddress inet3 = InetAddress.getByName("127.0.0.1"); //本机
+        InetAddress inet4 = InetAddress.getLocalHost(); //本机
+        //InetAddress方法
+        System.out.println(inet2.getHostName()); //获取域名
+        System.out.println(inet2.getHostAddress()); //获取IP地址
+
+        //TCP -> 客户端
+        InetAddress inet = InetAddress.getByName("127.0.0.1");
+        Socket socket = new Socket(inet,8899); //创建Socket对象，指明服务器端的ip和端口号
+        OutputStream os = socket.getOutputStream(); //获取一个输出流，用于输出数据
+        os.write("hello,i am clinet".getBytes()); //写出数据的操作
+        socket.shutdownOutput(); //告知服务器端结束输出操作
+
+        InputStream inputStream = socket.getInputStream(); //从服务器端输入流
+        ByteArrayOutputStream baos2 = new ByteArrayOutputStream(); //输出到控制台流
+        byte[] buffer2 = new byte[20];
+        int len2;
+        while((len2=inputStream.read(buffer2))!=-1){
+            baos2.write(buffer2,0,len2);
+        }
+        System.out.println(baos2.toString());
+
+        baos2.close(); //关闭资源
+        os.close();
+        socket.close();
+        //TCP -> 服务器
+        ServerSocket ss = new ServerSocket(8899); //创建ServerSocket，指明自己端口号
+        Socket so = ss.accept(); //获取客户端的Socket
+        InputStream is = so.getInputStream(); //获取输入流
+//        以下方法读中文字符会产生乱码
+//        byte[] buffer = new byte[200];
+//        int len;
+//        while((len=is.read(buffer))!=-1){
+//            String str = new String(buffer,0,len);
+//            System.out.println(str);
+//        }
+        ByteArrayOutputStream baos = new ByteArrayOutputStream(); //读取输入流中的数据
+        byte[] buffer = new byte[5];
+        int len;
+        while((len=is.read(buffer))!=-1){
+            baos.write(buffer,0,len);
+        }
+        System.out.println(baos.toString());
+
+        OutputStream serveros = so.getOutputStream(); //往客户端的流
+        serveros.write("SUCCESS".getBytes()); //输出
+
+        serveros.close(); //资源关闭
+        baos.close();
+        is.close();
+        socket.close();
+        ss.close();
+    }
+
+    @Test
+    public void testUDP() throws IOException {
+        //发送端
+        DatagramSocket socket = new DatagramSocket();
+        String str = "Hello";
+        byte[] data = str.getBytes(StandardCharsets.UTF_8);
+        InetAddress inet = InetAddress.getLocalHost();
+        DatagramPacket packet = new DatagramPacket(data,0,data.length,inet,9090);
+        socket.send(packet);
+        socket.close();
+        //接收端
+        DatagramSocket socket2 = new DatagramSocket(9090);
+        byte[] buffer = new byte[100];
+        DatagramPacket packet2 = new DatagramPacket(buffer,0,buffer.length);
+        socket.receive(packet2);
+        System.out.println(new String(packet.getData(),0,packet2.getLength()));
+        socket2.close();
+    }
+
+    @Test
+    public void testURL() throws IOException {
+        //URL
+        //<传输协议>://<主机名>:<端口号>/<文件名>#片段名?参数列表
+        URL url = new URL("http://www.google.com");
+        System.out.println(url.getProtocol()); //协议名
+        System.out.println(url.getHost()); //主机名
+        System.out.println(url.getPort()); //端口号
+        System.out.println(url.getPath()); //文件路径
+        System.out.println(url.getFile()); //文件名
+        System.out.println(url.getQuery()); //查询名（参数列表）
+        HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+
+        urlConnection.connect();
+        InputStream is = urlConnection.getInputStream();
+
+        byte[] buffer = new byte[1024];
+        int len;
+        while((len=is.read(buffer))!=-1){
+            System.out.println(buffer.toString());
+        }
+
+        is.close();
+        urlConnection.disconnect();
+    }
+
+
 }
 
 /*
