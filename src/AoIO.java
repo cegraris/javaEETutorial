@@ -3,6 +3,7 @@ import org.junit.Test;
 import java.io.*;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
+import java.util.Properties;
 
 /**
  * @author Jiahao Wu
@@ -330,6 +331,18 @@ public class AoIO {
                 e.printStackTrace();
             }
         }
+    }
+
+    @Test
+    public void testProperties() throws IOException {
+        //此时的文件默认在当前的module下
+        Properties pros = new Properties();
+        FileInputStream fis = new FileInputStream("jdbc.properties");
+        pros.load(fis);
+
+        String user = pros.getProperty("user");
+        String password = pros.getProperty("password");
+
     }
 
     @Test
