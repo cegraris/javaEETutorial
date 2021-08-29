@@ -4,10 +4,8 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.*;
 import java.util.Properties;
 
 /**
@@ -122,7 +120,7 @@ public class ApReflection {
 
         //getDeclaredFields(),获取当前运行时类中声明的所有属性（所有权限）（不包含父类中声明的属性）
         Field[] declaredFiedls = clazz.getDeclaredFields();
-        for (Field f : declaredFields) {
+        for (Field f : declaredFiedls) {
             //获取属性
             System.out.println(f);
             //获取权限修饰符
@@ -132,7 +130,7 @@ public class ApReflection {
             Class type = f.getType();
             System.out.println(type.getName() + "\t");
             //变量名
-            String fName = f.getType();
+            Class fName = f.getType();
             System.out.println(fName);
         }
         //getMethods()获取当前运行时类及其父类中声明为public权限的方法
@@ -168,12 +166,12 @@ public class ApReflection {
             }
             System.out.println(")");
             //6.抛出的异常
-            Class[] exceptionTyptes = m.getExceptionTypes();
+            Class[] exceptionTypes = m.getExceptionTypes();
             if (exceptionTypes.length > 0) {
                 System.out.println("throws");
-                for (int i = 0; i < exceptionTypes.length; i +) {
-                    if (i == exceptionTyptes.length - 1) {
-                        System.out.println(exceptionTyptes[i].getName());
+                for (int i = 0; i < exceptionTypes.length; i++) {
+                    if (i == exceptionTypes.length - 1) {
+                        System.out.println(exceptionTypes[i].getName());
                         break;
                     }
                     System.out.print(exceptionTypes[i].getName() + ",");
@@ -191,7 +189,7 @@ public class ApReflection {
         //getDeclaredConstructors()获取当前运行时类中声明的所有构造器
         Constructor[] declaredConstructors = clazz.getDeclaredConstructors();
         for (
-                Constructor c : delcaredConstructors) {
+                Constructor c : declaredConstructors) {
             System.out.println(c);
         }
 
@@ -204,12 +202,8 @@ public class ApReflection {
         //运行时类的带泛型的父类的泛型
         ParameterizedType paramType = (ParameterizedType) genericSuperclass;
         Type[] actualTypeArguments = paramType.getActualTypeArguments();
-        System.out.println(ctualTypeArguments[0].
-
-                getTypeName());
-        System.out.println((Class) actualTypeArguments[0].
-
-                getName());
+        System.out.println(actualTypeArguments[0].getTypeName());
+        System.out.println(((Class) actualTypeArguments[0]).getName());
         //获取运行时类实现的接口(不会get父类实现的接口)
         Class[] interfaces = clazz.getInterfaces();
         for (
@@ -233,9 +227,7 @@ public class ApReflection {
     如何操作运行时类中指定的属性和方法
      */
     @Test
-    publiv
-
-    void testReflection() throws Exception {
+    public void testReflection() throws Exception {
         //调用运行时类中指定的结构：属性、方法、构造器
         Class clazz = Human.class;
         Human h = (Human) clazz.newInstance();
@@ -243,9 +235,9 @@ public class ApReflection {
         //通常不采用此方法
         Field id = clazz.getField("id");
         //设置当前属性的值
-        id.set(p, 1001);
+        id.set(h, 1001);
         //获取当前属性的值
-        int pId = (int) id.get(p);
+        int pId = (int) id.get(h);
 
         //目前主要采用此方法：
         //调用属性
@@ -254,7 +246,7 @@ public class ApReflection {
         //2.保证当前属性是可访问的
         name.setAccessible(true);
         //3.获取、设置指定对象的此属性值
-        name.set(p, "Tom");
+        name.set(h, "Tom");
 
         //调用方法
         //1.获取指定的某个方法getDeclaredMethod():参数一：指明获取的方法的名称，参数二：指明获取的方法的形参列表
@@ -262,12 +254,12 @@ public class ApReflection {
         //2.保证当前方法是可访问的
         show.setAccessible(true);
         //3.调用invoke()：参数一：方法的调用者，方法二：给方法形参赋值的实参
-        Object returnValue = show.invoke(p, "CHN");
+        Object returnValue = show.invoke(h, "CHN");
         String returnValueString = (String) returnValue;
 
         //调用静态方法
         //private static void showDesc()
-        clazz.getDeclaredMethod("showDesc");
+        Method showDesc = clazz.getDeclaredMethod("showDesc");
         showDesc.setAccessible(true);
         Object returnVal = showDesc.invoke(Human.class); //void方法返回null
 
@@ -290,9 +282,9 @@ public class ApReflection {
         //动态代理：
         //问题1：如何根据加载到内存中的被代理类，动态的创建一个代理类及其对象
         //问题2：当通过代理类的对象调用方法时，如何动态的去调用被代理类中的同名方法
-        SuperMan superMan = new SuperMan();
-        Human proxyInstance = (Human) ProxyFactory.getProxyInstance(superMan);
-        proxyInstance.eat("Yammy");
+//        SuperMan superMan = new SuperMan();
+//        Human proxyInstance = (Human) ProxyFactory.getProxyInstance(SuperMan);
+//        proxyInstance.eat("Yammy");
     }
 
 }
@@ -358,7 +350,7 @@ class ProxyClothFactory implements ClothFactory {
     private ClothFactory factory; //用被代理类对象进行实例化
 
     public ProxyClothFactory(ClothFactory factory) {
-        this.factory = facotry;
+        this.factory = factory;
     }
 
     @Override
@@ -380,14 +372,14 @@ class NikeClothFactory implements ClothFactory {
 //*****动态代理*****
 class ProxyFactory {
     //调用此方法，返回一个代理类的对象
-    public static Objec getProxyInstance(Object obj) { //obj:被代理的对象
+    public static Object getProxyInstance(Object obj) { //obj:被代理的对象
         MyInvocationHandler handler = new MyInvocationHandler();
         handler.bind(obj);
         return Proxy.newProxyInstance(obj.getClass().getClassLoader(),obj.getClass().getInterfaces(),handler);
     }
 }
 
-class MyInvocationHandler implements InvocationHnadler{
+class MyInvocationHandler implements InvocationHandler{
     private Object obj; //赋值时需要使用被代理类的对象
     public void bind(Object obj){
         this.obj = obj;
@@ -395,7 +387,7 @@ class MyInvocationHandler implements InvocationHnadler{
     //当我们通过代理类的对象，调用方法a时，就会自动地调用如下的方法
     //将被代理类要执行的方法a的功能就声明再invoke()中
     @Override
-    public Object invoke(Object proxy,Mehtod method,Object[] args) throws Throwable {
+    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         //method即为代理类对象调用的方法，此方法也就作为了被代理类对象要调用的方法
         //obj：被代理的对象
         Object returnValue = method.invoke(obj,args);

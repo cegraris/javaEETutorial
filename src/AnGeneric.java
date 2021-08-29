@@ -7,7 +7,7 @@ import java.util.*;
 public class AnGeneric {
     public static void main(String[] args) {
         //在集合ArrayList中使用泛型
-        ArrayList<Integer> list = new ArrayList<Integer>(); //不指明时默认Object类
+        ArrayList<Integer> list = new ArrayList<Integer>(); //不指明时默认Object类,等号后面的泛型类可省略（类型推断）
         //泛型类不能用基本数据类型，可以用包装类替换
         list.add(78);
         list.add(100);
