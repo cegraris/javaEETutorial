@@ -99,7 +99,7 @@ public class AqJava8 {
 
         //创建Stream方式二：通过数组
         //调用Arrays类的static <T> Stream<T> stream(T[] array)返回一个流
-        int[] arr = new int[]{1,2,3,4,5,6}
+        int[] arr = new int[]{1,2,3,4,5,6};
         IntStream stream1 = (IntStream) Arrays.stream(arr);
         //对于一般类
         Employee[] arr2 = new Employee[5];
